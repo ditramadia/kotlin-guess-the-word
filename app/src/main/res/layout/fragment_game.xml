@@ -112,7 +112,6 @@
             android:layout_marginEnd="16dp"
             android:text="@string/got_it"
             android:theme="@style/GoButton"
-            android:onClick="@{() -> gameViewModel.onCorrect()}"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"

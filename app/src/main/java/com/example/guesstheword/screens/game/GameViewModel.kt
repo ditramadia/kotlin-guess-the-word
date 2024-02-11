@@ -8,10 +8,23 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.map
 
+private val CORRECT_BUZZ_PATTERN = longArrayOf(100, 100, 100, 100, 100, 100)
+private val PANIC_BUZZ_PATTERN = longArrayOf(0, 200)
+private val GAME_OVER_BUZZ_PATTERN = longArrayOf(0, 2000)
+private val NO_BUZZ_PATTERN = longArrayOf(0)
+
 class GameViewModel: ViewModel() {
+
+    enum class BuzzType(val pattern: LongArray) {
+        CORRECT(CORRECT_BUZZ_PATTERN),
+        GAME_OVER(GAME_OVER_BUZZ_PATTERN),
+        COUNTDOWN_PANIC(PANIC_BUZZ_PATTERN),
+        NO_BUZZ(NO_BUZZ_PATTERN)
+    }
 
     companion object {
         const val DONE = 0L
+        private const val COUNTDOWN_PANIC_SECONDS = 10L
         const val ONE_SECOND = 1000L
         const val COUNTDOWN_TIME = 10000L
     }
@@ -49,16 +62,27 @@ class GameViewModel: ViewModel() {
         set(value) {_isGameFinish}
         get() = _isGameFinish
 
+    // The game buzz state
+    private val _eventBuzz = MutableLiveData<BuzzType>()
+    var eventBuzz : LiveData<BuzzType>
+        set(value) {_eventBuzz}
+        get() = _eventBuzz
+
     init {
         Log.i("GameViewModel", "GameViewModel created!")
         _score.value = 0
         timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND) {
             override fun onTick(millisUntilFinished: Long) {
                 _currentTime.value = (millisUntilFinished / ONE_SECOND)
+                if (millisUntilFinished / ONE_SECOND <= COUNTDOWN_PANIC_SECONDS) {
+                    _eventBuzz.value = BuzzType.COUNTDOWN_PANIC
+                }
             }
 
             override fun onFinish() {
+                _currentTime.value = DONE
                 _isGameFinish.value = true
+                _eventBuzz.value = BuzzType.GAME_OVER
             }
         }
         timer.start()
@@ -128,5 +152,9 @@ class GameViewModel: ViewModel() {
 
     fun onGameFinish() {
         _isGameFinish.value = false
+    }
+
+    fun onBuzzComplete() {
+        _eventBuzz.value = BuzzType.NO_BUZZ
     }
 }
