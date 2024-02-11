@@ -1,30 +1,31 @@
 package com.example.guesstheword.screens.game
 
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.text.format.DateUtils
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.guesstheword.R
 import com.example.guesstheword.databinding.FragmentGameBinding
 
 class GameFragment : Fragment() {
 
-    // The current word
-    private var word = ""
-
-    // The current score
-    private var score = 0
-
-    // The list of words - the front of the list is the next word to guess
-    private lateinit var wordList: MutableList<String>
+    private lateinit var viewModel: GameViewModel
 
     private lateinit var binding: FragmentGameBinding
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+                              savedInstanceState: Bundle?): View {
 
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
@@ -34,88 +35,57 @@ class GameFragment : Fragment() {
             false
         )
 
-        resetList()
-        nextWord()
+        // Get the view model
+        Log.i("GameFragment", "ViewModelProvider called")
+        viewModel = ViewModelProvider(this)[GameViewModel::class.java]
+        binding.gameViewModel = viewModel
+        binding.lifecycleOwner = this
 
-        binding.correctButton.setOnClickListener { onCorrect() }
-        binding.skipButton.setOnClickListener { onSkip() }
-        updateScoreText()
-        updateWordText()
+        // Observe the live data
+        viewModel.isGameFinish.observe(viewLifecycleOwner, Observer { hasFinished ->
+            if (hasFinished) {
+                gameFinished()
+                viewModel.onGameFinish()
+            }
+        })
+        viewModel.eventBuzz.observe(viewLifecycleOwner, Observer { buzzType ->
+            if (buzzType != GameViewModel.BuzzType.NO_BUZZ) {
+                buzz(requireContext(), buzzType.pattern)
+                viewModel.onBuzzComplete()
+            }
+        })
+
+        // Event listener
+        binding.correctButton.setOnClickListener {
+            buzz(requireContext(), GameViewModel.BuzzType.CORRECT.pattern)
+            viewModel.onCorrect()
+        }
+
         return binding.root
-
-    }
-
-    /**
-     * Resets the list of words and randomizes the order
-     */
-    private fun resetList() {
-        wordList = mutableListOf(
-            "queen",
-            "hospital",
-            "basketball",
-            "cat",
-            "change",
-            "snail",
-            "soup",
-            "calendar",
-            "sad",
-            "desk",
-            "guitar",
-            "home",
-            "railway",
-            "zebra",
-            "jelly",
-            "car",
-            "crow",
-            "trade",
-            "bag",
-            "roll",
-            "bubble"
-        )
-        wordList.shuffle()
     }
 
     /**
      * Called when the game is finished
      */
     private fun gameFinished() {
-        val action = GameFragmentDirections.actionGameFragmentToScoreFragment(score)
+        val action = GameFragmentDirections.actionGameFragmentToScoreFragment()
+        action.setScore(viewModel.score.value ?: 0)
         findNavController().navigate(action)
     }
 
-    /**
-     * Moves to the next word in the list
-     */
-    private fun nextWord() {
-        //Select and remove a word from the list
-        if (wordList.isEmpty()) {
-            gameFinished()
-        } else {
-            word = wordList.removeAt(0)
+    private fun buzz(context: Context, pattern: LongArray) {
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+
+        // Check if the device supports vibration
+        if (vibrator.hasVibrator()) {
+            // Vibrate with the specified pattern
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                // Deprecated in API 26
+                @Suppress("DEPRECATION")
+                vibrator.vibrate(pattern, -1)
+            }
         }
-        updateWordText()
-        updateScoreText()
-    }
-
-    /** Methods for buttons presses **/
-
-    private fun onSkip() {
-        score--
-        nextWord()
-    }
-
-    private fun onCorrect() {
-        score++
-        nextWord()
-    }
-
-    /** Methods for updating the UI **/
-
-    private fun updateWordText() {
-        binding.wordText.text = word
-    }
-
-    private fun updateScoreText() {
-        binding.scoreText.text = score.toString()
     }
 }

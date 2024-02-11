@@ -6,12 +6,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.guesstheword.R
 import com.example.guesstheword.databinding.FragmentScoreBinding
 
 class ScoreFragment : Fragment() {
+
+    private lateinit var viewModel: ScoreViewModel
+    private lateinit var viewModelFactory: ScoreViewModelFactory
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,15 +30,23 @@ class ScoreFragment : Fragment() {
             false
         )
 
-        // Get args using by navArgs property delegate
-        val scoreFragmentArgs by navArgs<ScoreFragmentArgs>()
-        binding.scoreText.text = scoreFragmentArgs.score.toString()
-        binding.playAgainButton.setOnClickListener { onPlayAgain() }
+        // Get view model factory
+        viewModelFactory = ScoreViewModelFactory(ScoreFragmentArgs.fromBundle(requireArguments()).score)
+        viewModel = ViewModelProvider(this, viewModelFactory)[ScoreViewModel::class.java]
+        binding.scoreViewModel = viewModel
+        binding.lifecycleOwner = this
+
+        // Observe live data
+        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
+            binding.scoreText.text = newScore.toString()
+        })
+        viewModel.isPlayAgain.observe(viewLifecycleOwner, Observer { isPlayAgain ->
+            if (isPlayAgain) {
+                findNavController().navigate(ScoreFragmentDirections.actionScoreFragmentToGameFragment())
+                viewModel.onPlayAgainComplete()
+            }
+        })
 
         return binding.root
-    }
-
-    private fun onPlayAgain() {
-        findNavController().navigate(ScoreFragmentDirections.actionScoreFragmentToGameFragment())
     }
 }
