@@ -6,12 +6,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.guesstheword.R
 import com.example.guesstheword.databinding.FragmentScoreBinding
 
 class ScoreFragment : Fragment() {
+
+    private lateinit var viewModel: ScoreViewModel
+    private lateinit var viewModelFactory: ScoreViewModelFactory
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,9 +29,12 @@ class ScoreFragment : Fragment() {
             false
         )
 
+        // Initialize View Model Factory
+        viewModelFactory = ScoreViewModelFactory(ScoreFragmentArgs.fromBundle(requireArguments()).score)
+        viewModel = ViewModelProvider(this, viewModelFactory)[ScoreViewModel::class.java]
+
         // Get args using by navArgs property delegate
-        val scoreFragmentArgs by navArgs<ScoreFragmentArgs>()
-        binding.scoreText.text = scoreFragmentArgs.score.toString()
+        binding.scoreText.text = ScoreFragmentArgs.fromBundle(requireArguments()).score.toString()
         binding.playAgainButton.setOnClickListener { onPlayAgain() }
 
         return binding.root
