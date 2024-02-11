@@ -34,6 +34,7 @@ class ScoreFragment : Fragment() {
         viewModelFactory = ScoreViewModelFactory(ScoreFragmentArgs.fromBundle(requireArguments()).score)
         viewModel = ViewModelProvider(this, viewModelFactory)[ScoreViewModel::class.java]
         binding.scoreViewModel = viewModel
+        binding.lifecycleOwner = this
 
         // Observe live data
         viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->

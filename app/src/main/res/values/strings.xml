@@ -8,4 +8,6 @@
     <string name="got_it">Got it</string>
     <string name="you_scored">You Scored</string>
     <string name="play_again">Play Again</string>
+    <string name="quote_format">\"%s\"</string>
+    <string name="score_format">Score: %d</string>
 </resources>
