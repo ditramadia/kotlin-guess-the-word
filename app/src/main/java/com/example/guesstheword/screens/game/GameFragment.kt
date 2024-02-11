@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import com.example.guesstheword.R
 import com.example.guesstheword.databinding.FragmentGameBinding
 
@@ -78,8 +79,8 @@ class GameFragment : Fragment() {
      * Called when the game is finished
      */
     private fun gameFinished() {
-//        val action = GameFragmentDirections.actionGameToScore(score)
-//        findNavController(this).navigate(action)
+        val action = GameFragmentDirections.actionGameFragmentToScoreFragment(score)
+        findNavController().navigate(action)
     }
 
     /**

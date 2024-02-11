@@ -15,5 +15,20 @@
     <fragment
         android:id="@+id/gameFragment"
         android:name="com.example.guesstheword.screens.game.GameFragment"
-        android:label="GameFragment" />
+        android:label="GameFragment" >
+        <action
+            android:id="@+id/action_gameFragment_to_scoreFragment"
+            app:destination="@id/scoreFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/scoreFragment"
+        android:name="com.example.guesstheword.screens.score.ScoreFragment"
+        android:label="ScoreFragment" >
+        <action
+            android:id="@+id/action_scoreFragment_to_gameFragment"
+            app:destination="@id/gameFragment" />
+        <argument
+            android:name="score"
+            app:argType="integer" />
+    </fragment>
 </navigation>

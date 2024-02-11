@@ -6,4 +6,6 @@
     <string name="word_is">The word is…</string>
     <string name="skip">Skip</string>
     <string name="got_it">Got it</string>
+    <string name="you_scored">You Scored</string>
+    <string name="play_again">Play Again</string>
 </resources>
