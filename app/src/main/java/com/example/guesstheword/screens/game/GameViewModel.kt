@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.map
 
 class GameViewModel: ViewModel() {
 
@@ -23,6 +24,9 @@ class GameViewModel: ViewModel() {
     var currentTime : LiveData<Long>
         set(value) {_currentTime}
         get() = _currentTime
+    var currentTimeString: LiveData<String> = currentTime.map { time ->
+        DateUtils.formatElapsedTime(time)
+    }
 
     // The current word
     private var _word = MutableLiveData<String>()
